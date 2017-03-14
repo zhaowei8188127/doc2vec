@@ -11,10 +11,16 @@ from gensim.test.test_doc2vec import ConcatenatedDoc2Vec
 from data_tools import *
 from eval import *
 
+############
+# https://github.com/RaRe-Technologies/gensim/blob/develop/docs/notebooks/doc2vec-IMDB.ipynb
+############
+
+
 # download if file not exist
 prepare_data()
 
 SentimentDocument = namedtuple('SentimentDocument', 'words tags split sentiment')
+
 
 all_docs = []  # will hold all docs in original order
 with open('aclImdb/alldata-id.txt', encoding='utf-8') as alldata:
@@ -102,3 +108,14 @@ for epoch in range(passes):
     alpha -= alpha_delta
 
 print("END %s" % str(datetime.datetime.now()))
+
+# print best error rates achieved
+for rate, name in sorted((rate, name) for name, rate in best_error.items()):
+    print("%f %s" % (rate, name))
+
+# Are inferred vectors close to the pre-calculated ones?
+doc_id = np.random.randint(simple_models[0].docvecs.count)  # pick random doc; re-run cell for more examples
+print('for doc %d...' % doc_id)
+for model in simple_models:
+    inferred_docvec = model.infer_vector(all_docs[doc_id].words)
+    print('%s:\n %s' % (model, model.docvecs.most_similar([inferred_docvec], topn=3)))
